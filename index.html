@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz App</title>
+</head>
+<style>
+    *{
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: Verdana, Geneva, Tahoma, sans-serif;
+    }
+
+    body{
+        width: 100%;
+        height: 100vh;
+        background: linear-gradient(to right bottom,#08203e,#557c93);
+        color: #fff;
+        display: grid;
+        place-items: center;
+    }
+
+    .alert{
+        background-color: #5d9b63;
+        border: 5px;
+        width: 100%;
+        padding: 12px;
+        position: absolute;
+        top: 0;
+        display: none;
+    }
+
+    .startbtn{
+        width: 20%;
+        padding-block: 20px;
+        text-align: center;
+        font-size: 20px;
+        padding: 12px 20px; 
+        font-weight: 600;
+        margin: 20px auto 0 auto;
+        background-color: #006400;
+        border: none;
+        border-radius: 5px;
+        color: #fff;
+        cursor: pointer;
+        opacity: 1;
+    }
+
+    .startbtn:hover{
+        font-size: 25px;
+        opacity: 0.8;
+    }
+
+    .container{
+        width: 80%;
+        max-width: 850px;
+        padding: 30px;
+        text-align: center;
+        display: none;
+    }
+
+    .container h1{
+        font-size: 36px;
+        margin-bottom: 40px;
+        text-decoration: underline;
+        text-underline-offset: 8px;
+    }
+
+    .container .question{
+        font-size: 26px;
+        margin-top: 20px;
+    }
+
+    .container .choices{
+        margin-top: 20px;
+    }
+
+    .choice{
+        font-size: 20px;
+        background-color: #eee;
+        color: #000;
+        margin-left: auto;
+        margin-right: auto;
+        margin-top: 10px;
+        margin-bottom: 10px;
+        padding: 10px;
+        border-radius: 5px;
+        text-align: left;
+        width: 60%;
+        cursor: pointer;
+        opacity: 0;
+        transform: translateY(50%);
+        animation: fade-in 0.5s ease forwards;
+    }
+
+    .choice:hover{
+        background-color: #ddd;
+    }
+
+
+    .choice.selected{
+        background-color: #007bff;
+        color: #fff;
+    }
+
+    .btn{
+        width: 60%;
+        font-size: 20px;
+        padding: 12px 20px; 
+        font-weight: 600;
+        margin: 20px auto 0 auto;
+        background-color: #006400;
+        border: none;
+        border-radius: 5px;
+        color: #fff;
+        cursor: pointer;
+    }
+
+    .btn:hover{
+        background-color: #08780c;
+    }
+
+
+    .scorecard{
+        font-size: 24px;
+         margin-top: 50px;
+        margin-left: -5px;
+    }
+
+    .timer{
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        width: 72px;
+        height: 72px;
+        border-radius: 50%;
+        background-color: #08203e;
+        font-size: 24px;
+        font-weight: 600;
+        border: 2px solid #f00;
+        padding: 12px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        animation: pulse 1s ease-in-out infinite;
+    }
+
+    @keyframes pulse{
+     0%{
+            transform: scale(1);
+        }
+    50%{
+            transform: scale(1.2);
+        }
+    100%{
+            transform: scale(1);
+        }
+    }
+
+
+    /* Adding animation to choice */
+    @keyframes fade-in{
+        0%{
+            opacity: 0;
+            transform: translateY(50%);
+        }
+        100%{
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+
+    @media screen and (max-width:900px){
+        .container{
+            width: 100%;
+            margin-top: 50px;
+         }
+         .container h1{
+            font-size: 24px;
+         }
+         .container .question{
+            font-size: 22px;
+         }
+         .timer{
+            width:50px ;
+            height:50px ;
+            font-size: 20px;
+         }
+         .startbtn{
+            width: 50%;
+         }
+    }
+</style>
+<body>
+    <div class="alert">Alert</div>
+    <div class="startbtn">Start Quiz</div>
+    <div class="container">
+        <h1>Let's play a Quiz Game</h1>
+        <div class="question"></div>
+        <div class="choices"></div>
+        <button class="btn nextbtn">Next</button>
+        <div class="scorecard"></div>
+        <div class="timer"></div>
+    </div>
+
+
+    <script>
+        
+        const container = document.querySelector('.container');
+        const questionBox = document.querySelector('.question');
+        const choicesBox = document.querySelector('.choices');
+        const nextbtn = document.querySelector('.nextbtn');
+        const scorecard = document.querySelector('.scorecard');
+        const alert = document.querySelector('.alert');
+        const startbtn = document.querySelector('.startbtn');
+        const timer = document.querySelector('.timer');
+  
+
+
+
+        //make an array of objects thatr stores questions,choices of question and answer
+        const quiz = [
+            {
+                question:"Q. Which of the following is not a CSS box model property?",
+                choices: ["margin" , "padding" , "border-radius" , "border-collapse"],
+                answer: "border-collapse"
+            },
+            {
+                question:"Q. What is the effect of the <b> tag?",
+                choices: ["It converts the text within it to bold font." , "It is used to write black-coloured font." , "It is used to chamge the font size" , "None of the above"],
+                answer: "It converts the text within it to bold font."
+            },
+            {
+                question:"Q How many sizes of headers are available in HTML by default?",
+                choices: ["5" , "1" , "3" , "6"],
+                answer: "6"
+            },
+           {
+                question:"Q What is the correct syntax of doctype in HTML5?",
+                choices: ["</doctype html>" , "<doctype html>" , "<doctype html!>" , "<!doctype html>"],
+                answer: "<!doctype html>"
+            },
+            {
+                question:"Q Which of the following is used to read an HTML page and render it?",
+                choices: ["Web Server" , "Web Network" , "Web Browser" , "Web Matrix"],
+                answer: "Web Browser"
+            },
+            {
+                question:"Q Which of the following is used to read an HTML page and render it?",
+                choices: ["Web Server" , "Web Network" , "Web Browser" , "Web Matrix"],
+                answer: "Web Browser"
+            },
+            {
+                question:"Q Which of the following elements in HTML5 defines video or movie content?",
+                choices: ["<video>" , "<movie>" , "<audio>" , "<media>"],
+                answer: "<video>"
+            },
+            {
+                question:"Q Which character is used to represent when a tag is closed in HTML?",
+                choices: ["#" , "!" , "/" , "*"],
+                answer: "/"
+            },
+            {
+                question:"Q Which tag is used to create a dropdown in HTML Form?",
+                choices: ["<input>" , "<select>" , "<text>" , "<textarea>"],
+                answer: "<select>"
+            },
+            {
+                question:"Q Which HTML element is used for YouTube videos?",
+                choices: ["<samp>" , "<small>" , "<frame>" , "<iframe>"],
+                answer: "<iframe>"
+            },
+            {
+                question:"Q Which of the following is correct about JavaScript?",
+                choices: ["JavaScript is an Object-Based language" , "JavaScript is Assembly-language" , "JavaScript is an Object-Oriented language" , "JavaScript is a High-level language"],
+                answer: "JavaScript is an Object-Oriented language"
+            },
+            {
+                question:"Q Which of the following is not javascript data types?",
+                choices: ["Null type" , "Undefined type" , "Number type" , "All of the mentioned above"],
+                answer: "All of the mentioned above"
+            },
+            {
+                question:"Q Which of the following object is the main entry point to all client-side JavaScript features and APIs?",
+                choices: ["Position" , "Window" , "Standarad" , "Location"],
+                answer: "Window"
+            },
+            {
+                question:"Q Which of the following scoping type does JavaScript use?",
+                choices: ["Sequential" , "Segmental" , "Lexical" , "Literal"],
+                answer: "Lexical"
+            },
+            {
+                question:"Q How do you properly comment on a single line in JavaScript?",
+                choices: ["# This is a comment." , "// This is a comment." , "/* This is a comment.*/" , "<!-- This is a comment. --!>"],
+                answer: "// This is a comment."
+            }
+        ];
+
+        //making variables
+        let currentQuestionIndex = 0;//to check the index of the current question
+        let score = 0;
+        let quizOver = false;
+        let timeLeft = 15;
+        let timerID=null;
+
+
+        //arrow function to show questions
+        const showQuestions = () =>{
+            //console.log("Question");
+            const questionDetails = quiz[currentQuestionIndex];
+            questionBox.textContent = questionDetails.question;
+
+            choicesBox.textContent = "";
+            for(let i=0; i<questionDetails.choices.length; i++){//loop for choices
+                const currentChoice = questionDetails.choices[i];
+                const choiceDiv = document.createElement('div');//to create the element in javascript
+                choiceDiv.textContent = currentChoice;
+                choiceDiv.classList.add('choice');//to add the class in the element
+                choicesBox.appendChild(choiceDiv);//to add the choices one by one
+
+                choiceDiv.addEventListener('click', ()=>{//tocheck that we have selected a answer(choice)
+                    if(choiceDiv.classList.contains('selected')){
+                        choiceDiv.classList.remove('selected');
+                    }
+                    else{
+                        choiceDiv.classList.add('selected');
+                    }
+                });
+                
+             }
+             if(currentQuestionIndex < quiz.length){
+                startTimer();
+             }
+        }
+
+        //function to check answers
+        const checkAnswer = ()=>{
+            const selectedChoice = document.querySelector('.choice.selected');
+            if(selectedChoice.textContent === quiz[currentQuestionIndex].answer){//tocheck the selected answer is equal to current index or not
+               // alert("Correct Answer");
+                displayAlert("Correct Answer");
+                score++;
+            }
+            else{
+               // alert("Not Correct Answer");
+                displayAlert(`Wrong Answer! ${quiz[currentQuestionIndex].answer} is the Correct Answer`);
+            }
+            timeLeft = 15;
+            currentQuestionIndex++;
+            if(currentQuestionIndex < quiz.length){
+                showQuestions();
+            }
+            else{
+                showScore();
+                stopTimer();
+            }
+        }
+
+
+        //function to show the score
+        const showScore=()=>{
+            questionBox.textContent="";
+            choicesBox.textContent="";
+            scorecard.textContent=`You Scored ${score} out of ${quiz.length}!`;
+            displayAlert("You have completed this quiz!!!")
+            nextbtn.textContent="Play Again";
+            quizOver = true;
+            timer.style.display = "none";
+        }
+
+        //function to show alert
+        const displayAlert = (msg) =>{
+            alert.style.display = "block";
+            alert.textContent = msg;
+            setTimeout(()=>{//settimeout is used for running the code once  and setinterval is udes for running the code at every interval of time
+                alert.style.display = "none";
+            }, 1000);
+        }
+
+
+        //function to stop timer
+        const stopTimer=()=>{
+              clearInterval(timerID);
+        }
+
+        //function to start timer
+        const startTimer=()=>{
+            clearInterval(timerID); //check for any existing  timer
+            timer.textContent = timeLeft;
+            const countDown=()=>{
+                timeLeft--;
+                timer.textContent = timeLeft;
+                if(timeLeft === 0){
+                   const confirmUser = confirm("Time Up!!!! Do you want to play tha quiz again");
+                   if(confirmUser){
+                    timeLeft = 15;
+                    startQuiz();
+                   }
+                   else{
+                    startbtn.style.display = "block";
+                    container.style.display = "none";
+                    return;
+                   }
+                }
+             }
+             timerID = setInterval(countDown,1000);
+        }
+
+
+        //function to start quiz
+        const startQuiz = () =>{
+            timeLeft = 15;
+            timer.style.display = "flex";
+            showQuestions();
+        }
+
+        //Adding Event Listener to start button
+        startbtn.addEventListener('click',()=>{
+            startbtn.style.display = "none";
+            container.style.display = "block";
+            startQuiz();
+        });
+        
+
+        
+        nextbtn.addEventListener('click',()=>{
+            const selectedChoice=document.querySelector('.choice.selected');
+            if(!selectedChoice && nextbtn.textContent === "Next"){
+                // alert("Select your answer");
+                 displayAlert("Select your answer");
+                 return;
+            }
+            if(quizOver){
+                  nextbtn.textContent="Next";
+                  scorecard.textContent="";
+                  currentQuestionIndex = 0;
+                  startQuiz();
+                  quizOver=false;
+                  score=0;
+            }
+            else{
+                checkAnswer();
+            }
+            
+        });
+    
+    </script>
+</body>
+</html>
